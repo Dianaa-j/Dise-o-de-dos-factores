@@ -1,0 +1,291 @@
+---
+title: "Evaluación 4.  Diseño en bloques"
+author: "Diana Laura Javier Garcia"
+date: "14/11/2020"
+output:
+  word_document: default
+  html_document: default
+---
+
+# Ejemplo 10.7 y 10.8:
+
+The Universal Paper Company fabrica cajas de cartón. La empresa desea investigar los efectos de cuatro métodos de producción (métodos 1, 2, 3 y 4) sobre el número de cajas defectuosas producidas en una hora. Para comparar los métodos, la empresa podría utilizar un diseño completamente aleatorio. Para cada uno de los cuatro métodos de producción, la empresa seleccionaría varios (digamos, por ejemplo, tres) operadores de máquinas, capacitaría a cada operador para usar el método de producción al que se le ha asignado, haría que cada operador produzca cajas durante una hora y registre el número de cajas defectuosas producidas. Los tres operadores que utilizan cualquier método de producción serían diferentes de los que utilizan cualquier otro método de producción. Es decir, el diseño completamente aleatorio utilizaría un total de 12 operadores de máquina. Sin embargo, las habilidades de los operadores de la máquina podrían diferir sustancialmente. Estas diferencias pueden tender a ocultar diferencias reales entre los métodos de producción. Para superar esta desventaja, la empresa empleará un diseño experimental de bloques al azar. Esto implica seleccionar al azar a tres operadores de máquinas y capacitar a cada operador a fondo para utilizar los cuatro métodos de producción. Luego, cada operador producirá cajas durante una hora utilizando cada uno de los cuatro métodos de producción. El orden en el que cada operador utiliza los cuatro métodos debe ser aleatorio. Registramos el número de cajas defectuosas producidas por cada operador utilizando cada método. La ventaja del diseño de bloques al azar es que las tasas de defectos obtenidas mediante el uso de los cuatro métodos resultan de emplear los mismos tres operadores. Por tanto, las diferencias reales en la eficacia de los métodos no quedarían ocultas por diferencias en las habilidades de los operadores.
+
+Cuando Universal Paper emplea el diseño de bloques al azar, obtiene los 12 recuentos de cajas defectuosas de la Tabla 1. Sea $x_{ij}$ el número de cajas defectuosas producidas por el operador de la máquina utilizando el método de producción i. Por ejemplo, $x_{32}$ dice que el operador 2 de la máquina produjo 5 cajas defectuosas usando el método de producción 3. . Además de los 12 recuentos de cajas defectuosas, la tabla 1 proporciona la media muestral de estas 12 observaciones, que es $\bar{x} = 7,5833$, y también proporciona las medias del tratamiento de la muestra y las medias del bloque de la muestra. Las medias de tratamiento de la muestra son los recuentos promedio de cajas defectuosas obtenidos cuando se utilizan los métodos de producción 1, 2, 3 y 4. Denotando estas medias de tratamiento de muestra como $x_1.,x_2.,..x_4.$ Fz y., En la tabla 10.7 vemos que i. 10,3333, = 10,3333, x3. 5,0 y x. % 3D 4.6667. Porque xz. y. son menores que. y x., estimamos que el número medio de cajas defectuosas producidas por hora por el método de producción 3 o 4 es menor que el número medio de cajas defectuosas producidas por hora por el método de producción 1 o 2. 
+Las medias de los bloques de muestra son el promedio recuentos de cajas defectuosas obtenidos por los operadores de máquina 1, 2 y 3. Denotando estas medias de bloques de muestra como $x_{.1},x_{.2},..x_{.4}$, en la tabla 1 vemos que $x_{.1}=6.0,x_{.2}=7.75,x_{.3}=9.0$. Dado que $x_{.1},x_{.2},..x_{.4}$ difieren, tenemos evidencia de que las habilidades de los operadores de la máquina son diferentes y, por lo tanto, es razonable usar a los operadores de la máquina como bloques.
+
+Antes de comenzar a resolver el problema conviene plantear la notación a seguir. Para analizar los datos obtenidos en un diseño de bloques al azar, definimos:
+
+$x_{ij}$= el valor de la variable respuesta observada cuando el bloque j utiliza el tratamiento i
+
+$x_{i.}$= la media de los valores b de la variable de respuesta observada cuando se usa el tratamiento i 
+
+$x_{.j}$= la media de los valores p de la variable de respuesta observada cuando se usa el bloque j
+
+$\bar{x}$ = la media del total de los valores de pb de la variable de respuesta que hemos observado en el experimento
+
+Con esto claro, escribimos los datos en el documento *bloques.csv*, donde la primer columna es el número de cajas defectuosas, la segunda columna es la máquina operadora, o bloque, y finalmente la columna 3 es el método de producción, o tratamiento. 
+
+Para tener una primer idea del comportamiento de los datos, y a manera de corroborar la media y la desviación estandar proporcionados en el enunciado, se realizó el análisis descriptivo. A continuación se muestran los diagramas de caja, en función del tipo de operador y del tipo de tratamiento. 
+
+```{r}
+bloques<- read.csv("bloques.csv")
+bloques
+```
+```{r}
+names(bloques)
+attach(bloques)
+```
+
+
+```{r}
+boxplot(defectos ~ operador, xlab = "Tipo de operador", ylab = "Número de cajas defectuosas", col = palette("Tableau 10"))
+boxplot(defectos ~ tratamiento, xlab = "Tipo de tratamiento", ylab = "Número de cajas defectuosas", col = palette("Classic Tableau"))
+
+```
+De los diagramas de caja presentados se observa que, cuando el número de cajas defectuosas es menor cuando se emplea el operador 1, sin embargo, las cajas defectuosas aumentan con el operador y aún más cuando se emplea el operador 3. Se observa entonces, que existen diferencias entre usar uno u otro operador. De las misma manera, se observa en el diagrama de caja de tratamiento, que entre los tratamientos 1 y 2, se obtienen valores similares de defectos, sin embargo, el tratamiento 2 tienen una dispersión en los datos mayor. Por otra parte, se observa que entre los tratamiento 3 y 4, se tienen valores similares defectos, lo cuales son menores a 1 y 2. Hasta este punto se plantea la hipotesis de que entre el par de tratamiento 1 y 2 existen diferencias significativas con respecto al par de tratamiento 3 y 4. 
+
+Continuando con el análisis descriptivo,  se presenta el histograma de los datos con el ajuste a una curva normal
+
+```{r}
+par (mfrow=c(2,2))
+g = bloques$defectos
+m<-mean(g)
+std<-sqrt(var(g))
+
+hist(g, breaks = "Sturges", col=palette("Pastel 2"), main= "Distribución de Valores"
+, cex.main=1.0)
+
+hist(g, density=30, breaks = "Sturges", prob=TRUE, main= "Distribución V
+alores", cex.main=1.0, col=palette("Pastel 2"))
+
+hist(g, density=30, prob=TRUE, col=palette("Set 2"),
+xlab="Número de cajas defectuosas", ylim=c(0, 0.70),
+main="curva normal", cex.main=1.0)
+
+curve(dnorm(x, mean=m, sd=std),
+col="darkblue", lwd=2, add=TRUE, yaxt="n")
+zg<-(g-m)/std
+
+hist(zg, density=30, prob=TRUE,col=palette("Set 2"),
+xlab="Valores estandar", ylim=c(0, 0.70),
+main="Curva Normal Estándar", cex.main=1.0)
+
+curve(dnorm(x, mean=0, sd=1),
+col="darkblue", lwd=2, add=TRUE, yaxt="n")
+```
+De esta manera, se observa que los datos presentan frecuencias similares, según las clases propuestas, sin embargo, el ajuste de la curva no permite concluir si la distrbución es normal, esto se analizó en la siguiente sección. 
+
+## Varianza y normalidad
+
+Para estudiar normalidad de los datos se realizó se obtuvo la grafica cuantil-cualtil que permite observar cuan cerca está la distribución de un conjutno de datos a alguna distribución. Además se realizó la prueba de Kolmorogov y de Shapiro Wilk. Ambas pruebas plantean la hipótesis nula que una muestra proviene de una distribución normal, y por ende plantea una hipótesis alternativa que sostiene que la distribución no es normal. Para este trabajo se encontró que el p-valor de ambas es mayor a 0.05, se puede decir que los datos se distribuyen normalmente, estos resultados se pueden corroborar con el grafico cualtil-cualtil. 
+
+```{r}
+qqnorm(bloques$defectos)
+```
+
+### Prueba de Shapiro Wilk
+
+```{r}
+sw<-shapiro.test(bloques$defectos)
+print(sw)
+```
+
+### Prueba de Kolmogorov
+
+```{r}
+ks<-ks.test(bloques$defectos, "pnorm", mean=mean(bloques$defectos),sd=sd(bloques$defectos))
+print(ks)
+```
+
+### Prueba de Bartlett
+
+Para verificar  la igualdad de varianzas se aplicó la Prueba de Bartlett, la cual permite contrastar la igualdad de varianza en 2 o más poblaciones sin necesidad de que el tamaño de los grupos sea el mismo. Como se puede observar, el p-valor es mayor a 0.05, por lo tanto se cumple la hipotesis de que las varianzas no presentan diferencias significativas.
+
+```{r}
+bartlett.test(defectos ~ operador, data=bloques)
+bartlett.test(defectos ~ tratamiento, data=bloques)
+```
+
+
+## ANOVA
+
+En esta sección se presentan los resultados del ANOVA. En este punto, conviene recordar las hipótesis del análisis. En primer lugar, se parte de que la hipótesis nula $H_0$ es que la media de la variable estudiada es la misma en los diferentes grupos, en contra posición a la hipótesis alternativa de que al menos dos medias son diferentes. La instrucción para realizar el ANOVA es: *aov*. En este trabajo se guarda la instrucción como *modelocaja*. Y  posteriormente, los resultados se ven con el comando *summary*. En términos matemáticos:
+
+$H_0=\mu_1=\mu_2=...\mu_p$
+
+$H_a= al menos dos de \mu_1=\mu_2=...\mu_p difieren$
+
+Observación: Al momento de realiza la prueba deANOVA se encontraron varios errores en la lectura de los datos, por ello se reescribieron los datos en *datos3*:
+---------------------------
+```{r}
+datos3<-read.csv("bloque.csv")
+datos3
+```
+
+```{r}
+names(datos3)
+```
+
+```{r}
+datos3$tratamiento <-factor(datos3$tratamiento, labels = c('t1','t2','t3','t4'))
+datos3$operador <- factor(datos3$operador, labels = c('o1','o2','o3'))
+datos3
+```
+Finalmente, la prueba de ANOVA: 
+
+```{r}
+av2<-aov(datos3$defectos ~ datos3$operador+datos3$tratamiento)
+av2
+```
+```{r}
+summary(av2)
+```
+
+
+De los resultados obtenidos de la ANOVA se observa que el valor P del operador y del tratamiento son menores a 0.05, lo cual indica que existen diferencias entre operadores y tratamientos. Se observa también que el número de grados de libertad es correcto, según los bloques de este trabajo .
+
+Con el fin de corroborar lo anterior, se realizón los cálculos de la suma de cuadrados *SSTO* en tres componentes:la suma de cuadrados de tratamiento (SST), la suma de cuadrados de bloque (SSB) y la suma de cuadrados de error (SSE). La fórmula para SSTO es:
+
+$SSTO=SST+SSB+SSE$
+
+Donde:
+
+SST, que mide la cantidad de variabilidad entre tratamientos:
+
+$$
+S S T=b \sum_{i=1}^{p}\left(\bar{x}_{i}-\bar{x}\right)^{2}
+$$
+
+SSB, que mide la cantidad de variabilidad debida a los bloques:
+
+$$
+S S B=p \sum_{j=1}^{b}\left(\bar{x}_{j}-\bar{x}\right)^{2}
+$$
+SSTO, que mide la variabilidad total:
+
+$$
+S S T O=\sum_{i=1}^{\rho} \sum_{i=1}^{b}\left(x_{i j}-x\right)^{2}
+$$
+SSE, que mide la cantidad de variabilidad debida al error:
+
+$SSE = SSTO - SST - SSB$
+
+
+Ahora, se calculan las entradas en la tabla ANOVA. Las sumas de cuadrados en la caja de cartón defectuosa se calculan tomando en cuenta p=4 y b=3:
+
+
+$\begin{aligned} S S T=& 3\left[\left(\bar{x_1.}-\bar{x}\right)^{2}+\left(\bar{x_2}.-\bar{x}\right)^{2}+\left(\bar{x_3.}-\bar{x}\right)^{2}+\left(\bar{x_4.}-\bar{x}\right)^{2}\right] \\=& 3\left[(10.3333-7.5833)^{2}+(10.3333-7.5833)^{2}\right.\\ &\left.+(5.0-7.5833)^{2}+(4.6667-7.5833)^{2}\right] \\=& 90.9167 \end{aligned}$
+
+
+El cálculo de SSB:
+
+$\begin{aligned} S S B &=4\left[\left(\bar{x_{.1}}-\bar{x}\right)^{2}+\left(\bar{x_{.2}}-\bar{x}\right)^{2}+\left(\bar{x}_{.3}-\bar{x}\right)^{2}\right] \\ &=4\left[(6.0-7.5833)^{2}+(7.75-75833)^{2}+(9.0-7.5833)^{2}\right] \\ &=18.1667 \end{aligned}$
+
+El cálculo de SSTO:
+
+$\begin{aligned} \text { SSTO }=&(9-7.5833)^{2}+(10-7.5833)^{2}+(12-7.5833)^{2} \\ &+(8-75833)^{2}+(11-7.5833)^{2}+(12-7.5833)^{2} \\ &+(3-7.5833)^{2}+(5-7.5833)^{2}+(7-7.5833)^{2} \\ &+(4-75833)^{2}+(5-7.5833)^{2}+(5-75833)^{2} \\=& 112.9167 \end{aligned}$
+
+Finalmente, el cálculo de SSE:
+
+$\begin{aligned} S S E &=S S T O-S S T-S S B \\ &=112.9167-90.9167-18.1667 \\ &=3.8333 \end{aligned}$
+
+Los resultados se muestran en la siguiente imagen. 
+
+```{r out.width="600px"}
+ knitr::include_graphics("cap4.png" )
+```
+Además, se realizó el análisis de ANOVA en Excel, pero esto se analizará en la ultima sección. 
+
+### Para cada experimento, verificar los resultados de comparaciones múltiples mediante la prueba de Tukey . Obtener la estadística q mediante la tabla anexa. Los cálculos se usaran usando las formulas y los comandos en R
+
+###  interpretación de las diferencias entre promedios usando el criterio de Tukey. No olvidar presentar las gráficas de medias y/o si necesario las gráficas de interacción.
+
+
+
+En la sección anterior, en el análisis de ANOVA  se encontró que p es menor que 0.05, lo que está relacionado con la existencia de un efecto significativo de la variable operador y metodo de producción. Para estudiar cuales son los grupos que producen estas diferencias se aplico la prueba de Tukey, con la función: *TukeyHSD* y posteriormente se graficaron los intervalos de confianza. A continuación se presentan los resultados entre cada factor:
+
+```{r}
+
+TukeyHSD(aov(datos3$defectos~as.factor(datos3$tratamiento)))
+TukeyHSD(aov(datos3$defectos~as.factor(datos3$operador)))
+```
+
+De los intervalos de tratamiento presentados se puede notar que los pares entre  3 y 1, 4 y 1, 3 y 2, 4 y 2 el valor de p es menor a 0.05, por lo que se dice que entre ellos existen diferencias significativas. Por el contrario, entre los pares 2 y 1, y 4 y 3, el valor de p es mayor a 0.05, por lo tanto no tienen diferencias importates. Con respecto a los operadores, los pares estudiados tienen una valor-p mayor a 0.05, lo que significa que no tienen diferencias estadisticas entre sí. Esto se puede visualizar de forma gráfica:
+
+```{r}
+
+plot(TukeyHSD(aov(datos3$defectos~as.factor(datos3$tratamiento))))
+plot(TukeyHSD(aov(datos3$defectos~as.factor(datos3$operador))))
+```
+
+A continuación se presentan los cálculos de los intervalos:
+
+a) Intervalo de confianza $100(1-\alpha)$
+
+$$\left[\left(\bar{x_{i-}}-\bar{x_{h}}\right) \pm t_{a / 2} s \sqrt{\frac{2}{b}}\right]$$
+Donde $t_{a/2}$ es función del número de grados de libertad (p-1)(b-1), s es la raíz cuadra de MSE.
+
+b) Un intervalo de confianza simultáneo de Tukey del 100(1-A) por ciento para esta diferencia es:
+
+$$\left[\left(\bar{x_{i}}-\bar{x_{h}}\right) \pm q_{\alpha}} \frac{s}{\sqrt{b}}\right]$$
+
+Donde $q_{\alpha}}$ está relacionado con los valores de p y (p-1) y (b-1).
+
+
+
+Para calcular estos intervalos, primero notamos que $q_{.05}= 4.90$, donde p=4, y el producto (p-1)=3*(b-1)=2=6. De la Tabla ANOVA, MSE=0.639, entonces $\sqrt{MSE}=0.7994$. Sustituyendo estos datos:
+
+```{r out.width="600px"}
+ knitr::include_graphics("cap10.png" )
+```
+
+$$\begin{aligned}
+\left[\left(\bar{x}{4^{*}}-\bar{x}{1}\right) \pm q_{05} \frac{s}{\sqrt{b}}\right] &=\left[(4.6667-10.3333) \pm 4.90\left(\frac{.7994}{\sqrt{3}}\right)\right] \\
+&=[-5.6666 \pm 2.2615] \\
+&=[-7.9281,-3.4051]
+\end{aligned}$$
+Por otra parte, para estudiar la relación entre los factores se obtuvo el gráfico de interacción: 
+
+```{r}
+interaction.plot(datos3$tratamiento, datos3$operador, datos3$defectos)
+```
+
+
+Del análisis descriptivo se desprendieron observaciones importantes:
+
+1. Con respecto a los operadores, se encontró que el número 3 produce mayores cajas con defectos, le sigue el operador 2 y finalmente, el operador 1 es el que produce menos defectos. 
+
+2. Con respecto a los métodos se encontró que no hay diferencias significativas entre los métodos 1 y 2, asi como entre el par de métodos 3 y 4. Sin embargo, el par 1,2 es el que más defectos produce, y con ello, el par 3 y 4, son los que menos defectos tienen
+
+Si se une esta información  en el gráfico de interaación se tiene que la combinación entre el tratamiento 4 y el método 1 es la ideona, ya que es la que menos defectos produce. Seguido a esto, los tratamiento 3, 2 y 1 producen más defectos en ese orden, siendo la combinación entre el tratamiento 1 y el operador 1 el quue más defectos produce. 
+
+
+### Aunque no está incluido, realizar comparaciones múltiples mediante el método LSD (fórmulas en el Montgomery). Los cálculos se usaran usando las formulas y los comandos en R
+
+
+Para determinar los factores que influyen en la respuesta se obtiene la diferecia minima significativa (LSD)
+```{r}
+library(agricolae)
+LSD<-LSD.test(av2,"defectos")
+LSD
+```
+
+
+### Comprobar los resultados en Excel/yo/ en MegaStat
+
+Para comprobar los resultados mostrados, se obtuvo la Tabla de ANOVA en excel.
+
+```{r out.width="600px"}
+ knitr::include_graphics("cap9.png" )
+```
+
+De la Tabla, se observa que el análisis de varianza da el número de grados de libertad, la suma de cuadrados, el valor F y los valores criticos de F para cada factor. Si se compara con los resultados obtenidos en R, y con los cálculados mediante formulas puede notarse ligeras varicaciones, las cuales están asociadas principalemente al redondeo de números. Haciendo enfasis en la relación entre los factores tratamiento y operador, para un intervalo de confianza del 95% , se encontró que ambos factores influyen en el número de cajas defectuososa. La tabla se calculó en el documento *evacal.exc* en la hoja *CALCULOSE2*.
+
+### Presentar claramente sus conclusiones para cada tipo de experimento, de acuerdo con los resultados obtenidos, explicando las diferencias entre los tres tipos de experimentos.
+
+Con respecto a este experimento se tienen varias conclusiones. En primer lugar, se observó que el análsisis descriptivo con diagramas de caja e histogramas brinda la información suficiente para poder plantear hipotesis, recordeando que se identico tanto el operador y tratamiento con mayor número de defectos, queda claro que este es uno de los primeros indicativos. 
+
+Después de estudiar cualitiatavamente los datos se realizaron las pruebas de normalidad y diferencia de varianzas, estas pruebas permitieron mostrar que los datos se distribuian normalmente y que las varianzas puede ser iguales. Posteriormente, se procedió a indentificar los pares que tienen diferencias significativas, esto se realizó con el test de Tukey, finalmente se obtuvo el grafico de interacción, a partir de el se concluyó de manera general que la combinación entre los tratamiento 4 y el método 1 es la ideona, ya que es la que menos defectos produce. Seguido a esto, los tratamiento 3, 2 y 1 producen más defectos en ese orden, siendo la combinación entre el tratamiento 1 y el operador 1 el quue más defectos produce.
+
+

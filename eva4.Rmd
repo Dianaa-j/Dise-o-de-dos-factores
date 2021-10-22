@@ -1,0 +1,327 @@
+---
+title: "Evaluación 4- Diseño de un factor"
+author: "Diana Laura Javier Garcia"
+date: "11/11/2020"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+# Diseño con un factor 
+
+Ejemplo 10.4, 10.5 y 10.6
+
+Considere la situación del kilometraje de la gasolina. Sea $\mu_A$, $\mu_B$ y $\mu_C$ las medias y sean $\sigma_A$, $\sigma_B$ y $\sigma_C$ las desviaciones estándar de las poblaciones de todos los posibles kilómetrajes de gasolina usando gasolina de los tipos A, B y C.Para estimar estas medias y desviaciones estándar, North American Oil ha empleado una diseño experimental aleatorio y ha obtenido las muestras de kilometraje en la Tabla 10.1. Las medias de estas muestras $\bar{x_A}=34.92$, $\bar{x_B}=36.56$ y $\bar{x_C}=33.98$— son las estimaciones puntuales de $\mu_A$, $\mu_B$ y $\mu_C$. Las desviaciones estándar de estas muestras $s_A=0.7662$, $s_B=0.8503$ y $s_C=0.8349$— son las estimaciones puntuales de $\sigma_A$, $\sigma_B$ y $\sigma_C$.
+Con estas estimaciones puntuales, se probará si existen diferencias estadísticamente significativas entre las medias de tratamiento $\mu_A$, $\mu_B$ y $\mu_C$. Si existen tales diferencias, se estimará la magnitud de estas diferencias. Esto permitirá a North American Oil juzgar si estas diferencias tienen importancia práctica.
+
+
+Como el enunciado lo indica, este experimento constiste en evaluar el kilometraje de tres tipos de gasolina con el objetivo de saber si las difrencias entre estas son significativas. 
+
+Para tener una primer idea del comportamiento de los datos, y a manera de corroborar la media y la desviación estandar, se realizó el análisis descriptivo. Para ello los datos se reescribieron en un documento de excel con extensiòn *csv*, el cual se nombre *mileage*, de esta manera se leyeron los datos:
+
+```{r}
+mileage<- read.csv("mileage.csv")
+names(mileage)
+```
+
+Organizando los datos en forma vertical, en las columnas *gasolina* y *kilometraje*:
+
+```{r}
+mileage.vert<-data.frame(gasolina=gl(3,5),kilometraje=c(mileage$A,mileage$B,mileage$C))
+
+mileage.vert
+```
+
+Posteriormente se generó el diagrama de caja de cada una de las muestras, donde 1 se refiere a la gasolina A, 2 a la B, y 3 a la C. De los diagramas de caja se observa que el gasolina 2 presenta la mayor media, seguida de la gasolina tipo 1 y por último la gasolina tipo 3. Es importante notar que la gasolina 1 solo presenta un bigote, lo cual estaría asociado a una dispersiòn de los datos entre la media y el máximo. Sin embargo, es importante notar que la dispersión de la gasolina 1 y 3 son similares, lo cual es un buen indicativo de la presición de los datos. 
+
+Por otra parte, retomando el objetivo de este trabajo, se pueden observar diferencias claras entre las muestras, sin embargo, aunque parece que son significativas,  hasta este punto no se puede concluir. El estudio de las diferencias se analizó en la siguiente sección. 
+
+```{r}
+boxplot(kilometraje ~ gasolina, xlab = "Tipo de gasolina", ylab = "Kilometraje", data = mileage.vert, col = rainbow(10))
+```
+
+A fin de corroborar númericamente las observaciones anteriores, se obtuvo el resumen estadístico de las muestras como se presenta a continuación:
+
+```{r}
+summary(mileage)
+```
+
+Con la desviación estandar:
+```{r}
+sapply(mileage,sd)
+```
+La primera observación que se tiene es que estos resultados coinciden con los presentados en el enunciado. Y tal como se observó en el diagrama de caja, la desviaciones entre las muestras son muy parecidas, lo que está asociado a una distribuión similar de los datos entre los cuartiles. 
+
+Por otra parte, si se analizan los histogramas de cada una de las muestras se observa que, la muestra 1, con 4 clases, presentan la misma frecuencia, a excepciòn de la primera clase que tiene una frecuencia de 2. A diferencia de esta, las muestras 2 y 3 presentan frecuencias muy diferentes en cada una de sus muestras. Ahora bien, se analiza en conjunto el kilometraje, como se muestra en la siguiente figura, se observa que tanto la frecuencia absoluta como la relativa se ajustan a una distribución normal. La prueba de normalidad se realiza en la siguiente sección. 
+
+
+```{r}
+par(mfrow=c(3,1))
+hist(mileage$A, main = "Histograma de la gasolina A", ylab = "Frecuencia", xlab = "Gasolina A",col=palette("Tableau 10"), labels =  TRUE)
+hist(mileage$B, main = "Histograma de la gasolina B", ylab = "Frecuencia", xlab = "Gasolina B",col=palette("Pastel 2"), labels = TRUE)
+hist(mileage$C, main = "Histograma de la gasolina C", ylab = "Frecuencia", xlab = "Gasolina C",col=palette("Paired"), labels = TRUE)
+
+```
+```{r}
+par (mfrow=c(2,2))
+g = mileage.vert$kilometraje
+m<-mean(g)
+std<-sqrt(var(g))
+
+hist(g, breaks = "Sturges", col = "cyan", main= "Distribución de kilometraje",
+cex.main=1.0)
+
+hist(g, density=30, breaks = "Sturges", prob=TRUE, main= "Distribución
+de kilometraje", cex.main=1.0)
+
+hist(g, density=30, prob=TRUE, col = 12,
+xlab="Kilometraje", ylim=c(0, 0.5),
+main="Curva Normal sobre Kilometraje", cex.main=1.0)
+
+curve(dnorm(x, mean=m, sd=std),
+col="darkblue", lwd=2, add=TRUE, yaxt="n")
+zg<-(g-m)/std
+
+hist(zg, density=30, prob=TRUE, col = 12,
+xlab="Kilometraje estandar", ylim=c(0, 0.55),
+main="Curva Normal Estándar sobre Kilometraje", cex.main=1.0)
+curve(dnorm(x, mean=0, sd=1),
+col="darkblue", lwd=2, add=TRUE, yaxt="n")
+```
+## Varianza y normalidad
+
+Para estudiar normalidad de los datos se realizó se obtuvo la grafica cuantil-cualtil que permite observar cuan cerca está la distribución de un conjutno de datos a alguna distribución. Además se realizó la prueba de Kolmorogov y de Shapiro Wilk. Ambas pruebas plantean la hipótesis nula que una muestra proviene de una distribución normal, y por ende plantea una hipótesis alternativa que sostiene que la distribución no es normal. Para este trabajo se encontrò que dado que el p-valor de ambas es mayor a 0.05,  se puede decir que los datos se distribuyen normalmente, tal como se estimó anteriormente. 
+
+```{r}
+qqnorm(mileage.vert$kilometraje)
+```
+
+### Prueba de Shapiro Wilk
+
+```{r}
+sw<-shapiro.test(mileage.vert$kilometraje)
+print(sw)
+```
+
+### Prueba de Kolmogorov
+
+```{r}
+ks<-ks.test(mileage.vert$kilometraje, "pnorm", mean=mean(mileage.vert$kilometraje),sd=sd(mileage.vert$kilometraje))
+print(ks)
+```
+
+### Prueba de Bartlett
+
+Para verificar  la igualdad de varianzas se aplicó la Prueba de Bartlett, la cual permite contrastar la igualdad de varianza en 2 o más poblaciones sin necesidad de que el tamaño de los grupos sea el mismo. Como se puede observar, el p-valor es mayor a 0.05, por lo tanto se cumple la hipotesis de que las varianzas no presentan diferencias significativas.
+
+```{r}
+bartlett.test(kilometraje ~ gasolina, data=mileage.vert)
+```
+
+
+## ANOVA
+
+En esta sección se presentan los resultados del ANOVA. En este punto, conviene recordar las hipótesis del análisis. En primer lugar, se parte de que la hipótesis nula $H_0$ es que la media de la variable estudiada es la misma en los diferentes grupos, en contra posición a la hipótesis alternativa de que al menos dos medias son diferentes. La instrucción para realizar el ANOVA es: *aov*. En este trabajo se guarda la instrucción como *modelo*. Y  posteriormente , los resultados se ven con el comando *summary*. En términos matemáticos:
+
+$H_0=\mu_1=\mu_2=...\mu_p$
+
+$H_a= al menos dos de \mu_1=\mu_2=...\mu_p difieren$
+
+```{r}
+modelo <- aov(kilometraje ~ gasolina, data = mileage.vert)
+modelo
+```
+
+```{r}
+summary(modelo)
+```
+Analizando los resultados de la tabla ANOVa tenemos las siguientes observaciones:
+
+ 1. Los grados de libertad del factor son 2
+ 2. Los grados de libertad residuales con 12
+ 3. La suma de cuadrado de los grupos son 17.049
+ 4. La suma de cuadrados del error son 8.028.
+ 5. El valor estadístico F es 12.74, que es valor critico. 
+ 6. El valor de p es 0.00108
+ 
+ 
+De la observación 6, dado que p es menor que 0.05 se concluye que existe un efecto significativo de la variable gasolina. 
+Con el fin de corroborar el resultado obtenido de la prueba ANOVA, se presentan los cálculos correspondientes a la *suma de cuadrados y medias al cuadrado*:
+
+$SST=\Sigma n_i (\bar{x_i}-\bar{x})^2$
+
+Donde $\bar{x}=\frac{34+35+...+34.9}{15}=35.153$
+
+El valor de SST se obtuvo calculando la diferencia entre la media de cada muestra $x_i$ y la media $\bar{x}$, luego se elvaron al cuadrado estas diferencias y se multiplicaron por el número de observaciones y se sumo el total. El resultado obtenido es una medida de la variabilidad de las medias de las muestras. Los resultados se realizaron en Excel y se presentan a continuación:
+
+
+Entonces:
+
+$SST= n_{A}(\bar{xA}-\bar{x})^2 + n_{B}(\bar{xB}-\bar{x})^2 + n_{C}(\bar{xC}-\bar{x})^2$
+
+$= 5(34.92-35.153)^{2}+5(36.56-35.153)^{2}+5(33.98-35.153)^{2} = 17.0493$
+
+Los resultados se presentan en Excel
+
+```{r out.width="600px"}
+ knitr::include_graphics("cap1.png" )
+
+```
+
+Mientras que el error de la suma de cuadrados es:
+
+$SSE=\sum_{j=1}^{n_{1}}\left(x_{1 j}-\bar{x_1}\right)^{2}+\sum_{j=1}^{n_{2}}\left(x_{2 j}-\bar{x}_{2}\right)^{2}+\cdots+$
+
+$=\sum_{j=1}^{n_{A}}\left(x_{Aj}-\bar{xA}\right)^{2} + \sum_{j=1}^{n_{B}}(x_{Bj}-\bar{x_B}\right)^{2}+\sum{j=1}^{n_{c}}\left(x_{C j}-\bar{x_C}\right)^{2}$
+
+$\left[(34.0-34.92)^{2}+(35.0-34.92)^{2}+(34.3-34.92)^{2}+(35.5-34.92)^{2}+(35.8-34.92)^{2}\right]$
+
+
+$+\left[(35.3-36.56)^{2}+(36.5-36.56)^{2}+(36.4-36.56)^{2}+(37.0-36.56)^{2}+(37.6-36.56)^{2}\right]$
+
+$+\left[(33.3-33.98)^{2}+(34.0-33.98)^{2}+(34.7-33.98)^{2}+(33.0-33.98)^{2}+(34.9-33.98)^{2}\right]$
+
+$=8.028$
+
+
+```{r out.width="600px"}
+ knitr::include_graphics("cap2.png" )
+```
+
+Finalmente, se define la suma de los cuadrados SSTO:
+
+$SSTO=SST+SSE$
+
+$SSTO=SST+SSE=177.049+0.802=25.077$
+
+Se definen además, *treatment mean square, MST*
+
+$MST=\frac{SST}{p-1}$
+
+$MSE=\frac{SSE}{n-p}$
+
+Y partir de estos, se define F como:
+
+$F=\frac{MST}{MSE}
+
+En este problema p=3, ya que es el número de muestras:
+
+$$
+M S T=\frac{S S T}{p-1}=\frac{17.0493}{3-1}=8.525
+$$
+Además:
+
+$$
+\begin{aligned}
+M S E &=\frac{S S E}{n-p}=\frac{8.028}{15-3}=0.669 \\
+F &=\frac{M S T}{M S E}=\frac{8.525}{0.669}=12.74
+\end{aligned}
+$$
+
+En la siguiente sección se obtuvieron estas diferencias por el método de Tukey, para ello se empleó la función: *TukeyHSD* y posteriormente se graficaron los intervalos de confianza.
+
+```{r}
+intervals = TukeyHSD(modelo)
+intervals
+print(intervals)
+```
+```{r}
+plot(intervals)
+```
+
+El método de Turkey indica que las diferencias entre medias en las que el intervalo de confianza engloba los límites inferior y superior que no contienen el valor cero, son estadísticamente significativas, además de que el valor P es menor a 0.05. Para este problema, vemos que los grupos con diferencias significativas son los siguientes:
+
+Gasolinas 3 y 2
+Gasolinas 2 y 1
+
+Mientras que el grupo que toca el cero, es decir, que tiene una diferencia entre las medias no estadisticamente significativa y con valor de p mayor a 0.05 es:
+
+Gasolina 3 y 1.
+
+
+Realizando los cálculos:
+
+Considerando una diferencia entre $\mu_i-\mu_h$ para un intervalo de confianza entre:
+
+$$
+\left[\left(\bar{x_i}-\bar{x_h}\right) \pm t_{a / 2} \sqrt{\operatorname{MSE}\left(\frac{1}{n_{i}}+\frac{1}{n_{h}}\right)}\right]
+$$
+Donde $t_{\alpha/2}$ depende de los grados de libertad $n-p$ y MSE es el error definido anteriormente. 
+
+Además, el porcentaje de confianza de TUkey para $\mu_i-\mu_h$ : 
+
+$\left[\left(\bar{x_i}-\bar{x}\right) \pm q_{a} \sqrt{\frac{M S E}{m}}\right]$
+
+Donde $q_\alpha$ es el valor de tabla correspondiente  a la intersección entre $p$ y $n-p$. 
+
+Y el estimador puntual de la media, $\bar{x_i}$ para un intervalo de confianza $\alpha$:
+
+$\left[\bar{x_i} \pm t{\alpha / 2} \sqrt{\frac{M S E}{n_{i}}}\right]$
+
+Para este trabajo, p=3, ya que es el número de muestras, cada una de tamaño 5, con un total de 15 observaciones (n=15), y MSE=0.669 como se encontró anteriormente. Además, consultando la Tabla de Tukey cuando n=3 y m=n-p=15-3=12, se obtiene $q_0.05=3.77$
+
+
+```{r out.width="600px"}
+ knitr::include_graphics("tukey.png" )
+
+```
+Así, para el intervalo entre la muestra 1 y 2 es:
+
+$$\begin{aligned}
+\left[\left(\bar{x_A}-\bar{x_Bn}\right) \pm q_{0.5} \sqrt{\frac{M S E}{m}}\right] &=\left[(34.92-36.56) \pm 3.77 \sqrt{\frac{0.669}{5}}\right] \\
+&=[-1.64 \pm 1.379] \\
+&=[-3.019,-0.261]
+\end{aligned}$$
+
+El intervalo entre las muestras 1 y 2 (A y C)
+
+$$ \begin{array}{l}
+{\left[\left(\bar{x_A}-\bar{x_C}\right) \pm 1.379\right]} \\
+\quad=[(34.92-33.98) \pm 1.379] \\
+\quad=[-0.439,2.319]
+\end{array}
+$$
+Y finalmente, el intervalo entre la muestra B y C:
+
+$$\begin{array}{l}
+{\left[\left(\bar{x_B}-\bar{x_c}\right) \pm 1.379\right]^{\coprod}} \\
+=[(36.56-33.98) \pm 1.379] \\
+=[1.201,3.959]
+\end{array}$$
+
+Como se puede observar, el intervalo entre las muestras A y C contiene el valor de  0, esto significa que existe una posibilidad de que ambas medias de la población sean iguales. A diferencia de esto, las muestras A con B y A con C, no contienen el valor cero, por lo que se puede afirmar que existen diferencias significativas. Se observa, además que estos resultados coinciden con los obtenidos con la prueba de Tukey realizada al inicio  de esta sección. 
+
+Para finalizar se obtuvo el análisis LSD
+
+```{r}
+library(agricolae)
+attach(mileage.vert)
+```
+```{r}
+LSD <-LSD.test(modelo,"gasolina")
+LSD
+plot(LSD)
+```
+
+
+Para finalizar este trabajo, se comprobaron los resultados mediante un análisis de ANOVA en excel. Los resultados se muestran a continuación:
+
+```{r out.width="600px"}
+ knitr::include_graphics("cap3.png" )
+```
+Como se puede observar, el análisis ANOVA proporciona la suma de los cuadrados, los grados de libertad, el promedio de los cuadrados, el valor y la probabilidad, los cuales si se comparan con el análisis de R, se encuentran resultados similares, salvo por algunas diferencias de decimas, las cuales pueden deberse a redondeo o al mismo programa. De esta manera, se comprueba que dado que el valor de la probabilidad es menor que 0.05 (correspondiente a un nivel de confianza del 95%) existe diferencia entre usar cualquiera de las gasolinas del experimento. El análisis puede consultarse en el documento de excel *evacal.exc* en la hoja *ANOVA E1*. 
+
+
+### Presentar claramente sus conclusiones para cada tipo de experimento, de acuerdo con los resultados obtenidos, explicando las diferencias entre los tres tipos de experimentos.
+
+Con base a los análisis presentados se concluye de manera general que tanto, el análisis realizado con R, con fórmulas y con Excel, se encuentran los mismos resultados, lo que permitió corroborar los cálculos del libro consultado. Es importante mencionar, que a partir del análisis descriptivo por medio de diagramas de caja e histogramas se pueden inferir las primeras hipotesis, las cuales en este trabajo en partícular fueron comprobadas en su totalidad con cada uno de los cálculos. Algunas de las conclusiones que se pueden desprender son las siguientes:
+
+A partir del diagrama de caja y del resumen de datos, se encontró que la gasolina que tiene mayor kilometraja fue la tipo 2 (o B), y la diferencia con las otras dos es dos unidades. Se encontró además que no existe una dispersión de los datos de manera importante, por lo que los datos son recabados con precisión. Esto es importante porque proporciona una medida de confiabilidad. Con respecto a la distribución, se observa una tendencia de normalidad, sin embargo a simple vista no se puede concluir. 
+
+Las pruebas de normalidad (Shapiro y Kolmorogov) e igualdad de varianza (Bartlett)  pudieron verificar que los datos siguen una distribución normal y que se puede afirmar la hipotesis de que las varianzas no presentan diferencias significativas. 
+
+Con respecto al análisis de ANOVA, este rechazó la hipotesis nula de que la media de la variable kilometraje es la misma en las diferentes muestras, esto significa que existe una diferencia entre usar una de las tres gasolinas. Para detectar los grupos que generan estas diferencias su realizó la prueba de Tukey. El análisis de esta prueba, apartir de la evaluación de p-valor,  mostró que el par de gasolinas 3 y 2, asi como las gasolinas 2 y 1 son la que no tienen una diferencia significativa, a diferencia de estas, el par que si presenta diferencia son las 3 y 1. Como parte de este trabajo, además se calcularón los intervalos con las fórmulas matematicas, las cuales permitieron corroborar el análisis de R. 
+
+Finalmente, se obtuvo el mismo anális ANOVA en R, el cual fue consistente con todos los cálculos anteriores. A manera de conclusión, para este experimento en particular, se recomienda usar la gasolina tipo 2 ya que es la que mayor kilometraje rinde, y dado que no existe una diferencia significativa entre las gasolinas 1 y 3, estas pueden usarse indistintamente, pero no se recomienda su empleo.
+
+

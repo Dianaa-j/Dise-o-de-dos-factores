@@ -1,0 +1,39 @@
+---
+title: "eva422"
+author: "Diana Laura Javier Garcia"
+date: "20/11/2020"
+output: html_document
+---
+
+```{r}
+datos3<-read.csv("bloque.csv")
+datos3
+```
+
+```{r}
+names(datos3)
+```
+
+```{r}
+datos3$tratamiento <-factor(datos3$tratamiento, labels = c('t1','t2','t3','t4'))
+datos3$operador <- factor(datos3$operador, labels = c('o1','o2','o3'))
+datos3
+```
+
+```{r}
+names(datos3)
+```
+
+```{r}
+attach(datos3)
+```
+
+
+```{r}
+av2<-aov(datos3$defectos ~ datos3$operador+datos3$tratamiento)
+av2
+```
+```{r}
+summary(av2)
+```
+
